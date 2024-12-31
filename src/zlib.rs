@@ -3,18 +3,19 @@ use nom::{bytes::complete::take, number::complete::u8, IResult};
 
 use crate::deflate::read_deflate;
 
-pub fn read_zlib(rest: &[u8]) -> IResult<&[u8], Vec<u8>> {
-    let (rest, ()) = read_header(rest)?;
+pub fn read_zlib<'a, 'b>(rest: &'a [u8], dict: Option<&'b str>) -> IResult<&'a [u8], Vec<u8>> {
+    let (rest, ()) = read_header(rest, dict)?;
     let (footer, rest) = take(rest.len() - 4)(rest)?;
 
     let buf = read_deflate(rest);
 
     check_adler(footer.try_into().unwrap(), &buf);
+    // assert!(rest.is_empty());
 
     Ok((rest, buf))
 }
 
-fn read_header(header: &[u8]) -> IResult<&[u8], ()> {
+fn read_header<'a, 'b>(header: &'a [u8], dict: Option<&'b str>) -> IResult<&'a [u8], ()> {
     let (header, cmf) = u8(header)?;
     let compression_method = cmf & 0x0f;
     assert_eq!(compression_method, 8, "Invalid compression method!");
@@ -26,11 +27,20 @@ fn read_header(header: &[u8]) -> IResult<&[u8], ()> {
     let check = ((cmf as u16) << 8) | flg as u16;
 
     let _fdict = flg & 0b00100000 >> 5;
+
     let header = if _fdict == 1 {
         let (header, _dict_id) = take(4usize)(header)?;
+        if let Some(dict) = dict {
+            check_adler(_dict_id.try_into().unwrap(), dict.as_bytes());
+        } else {
+            println!("File has a dict ID but no dict was passed!")
+        };
 
         header
     } else {
+        if dict.is_some() {
+            println!("Ignoring dictionary passed, File has no dictionary")
+        }
         header
     };
 
