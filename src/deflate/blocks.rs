@@ -1,9 +1,11 @@
+use dynamic_huffman::read_dynamic_huffman;
 use fixed_huffman::fixed_huffman_tree;
 
 use crate::{bit_reader::BitReader, huffman_tree::HuffmanTree};
 
 use super::length_distance::decode_length_distance;
 
+mod dynamic_huffman;
 mod fixed_huffman;
 
 pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
@@ -18,7 +20,8 @@ pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
             read_compressed_block(reader, buf, literal, distance);
         }
         0b10 => {
-            unimplemented!("Dynamic")
+            let (literal, distance) = read_dynamic_huffman(reader);
+            read_compressed_block(reader, buf, literal, distance);
         }
         0b11 => {
             unreachable!("Reserved")
@@ -46,12 +49,15 @@ fn read_compressed_block(
             std::cmp::Ordering::Equal => break,
             std::cmp::Ordering::Greater => {
                 let (length, distance) = decode_length_distance(reader, &distance_tree, value);
+                let source = buf.len() - distance;
                 if length <= distance {
-                    let source = buf.len() - distance;
                     let range = source..source + length;
                     buf.extend_from_within(range);
                 } else {
-                    todo!()
+                    for i in 0..length {
+                        let byte = buf[source + (i % distance)];
+                        buf.push(byte);
+                    }
                 }
             }
         }

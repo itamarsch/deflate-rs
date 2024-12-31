@@ -13,7 +13,6 @@ pub fn decode_length_distance(
     let distance_extra_bits = distance_extra_bits(distance_byte);
     let distance_extra = reader.read_n_bits(distance_extra_bits);
     let distance = decode_distance(distance_byte as usize, distance_extra);
-
     (length, distance)
 }
 
@@ -67,6 +66,6 @@ fn distance_extra_bits(distance_byte: u16) -> usize {
     if distance_byte < 2 {
         0
     } else {
-        ((distance_byte - 2) / 4) as usize
+        ((distance_byte - 2) / 2) as usize
     }
 }

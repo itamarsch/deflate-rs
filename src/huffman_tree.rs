@@ -1,6 +1,6 @@
 use crate::bit_reader::BitReader;
 
-pub struct HuffmanTree(Vec<HuffmanSymbol>);
+pub struct HuffmanTree(pub Vec<HuffmanSymbol>);
 
 #[derive(Clone, Copy, Debug)]
 pub struct HuffmanSymbol {

@@ -1,4 +1,4 @@
-use crate::{bit_reader::BitReader, huffman_tree::HuffmanTree};
+use crate::huffman_tree::HuffmanTree;
 
 pub fn fixed_huffman_tree() -> (HuffmanTree, HuffmanTree) {
     let mut literals = [0; 288];
