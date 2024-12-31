@@ -7,7 +7,7 @@ use deflate::{bit_reader::BitReader, deflate::blocks::read_block};
 use nom::{bytes::complete::take, IResult};
 
 fn main() {
-    let mut file = File::open("compressed2").unwrap();
+    let mut file = File::open("uncompressed.bin").unwrap();
     let mut bytes = vec![];
     file.read_to_end(&mut bytes).unwrap();
     let (_, buf) = read_zlib(&bytes[..]).unwrap();

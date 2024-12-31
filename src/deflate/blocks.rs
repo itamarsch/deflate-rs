@@ -1,3 +1,5 @@
+use std::ops::Not;
+
 use dynamic_huffman::read_dynamic_huffman;
 use fixed_huffman::fixed_huffman_tree;
 
@@ -12,8 +14,13 @@ pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
     let bfinal = reader.read_bool();
     let block_type = reader.read_n_bits(2);
     match block_type {
-        0 => {
-            unimplemented!("Uncompressed");
+        0b00 => {
+            reader.read_until_byte_boundry();
+            let len = reader.read_u16();
+            let nlen = reader.read_u16();
+            assert_eq!(len as u16, (nlen as u16).not());
+            let data = reader.read_bytes(len);
+            buf.extend_from_slice(data);
         }
         0b01 => {
             let (literal, distance) = fixed_huffman_tree();

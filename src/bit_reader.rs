@@ -37,4 +37,25 @@ impl BitReader<'_> {
     pub fn read_bool(&mut self) -> bool {
         self.read_n_bits(1) == 1
     }
+
+    pub fn read_until_byte_boundry(&mut self) {
+        let bit_index = self.bit_position % 8;
+        self.read_n_bits(8 - bit_index);
+    }
+
+    pub fn read_bytes(&mut self, n: usize) -> &[u8] {
+        assert!(self.bit_position % 8 == 0);
+        let byte_index = self.bit_position / 8;
+        let slice = &self.data[byte_index..byte_index + n];
+        self.bit_position += n * 8;
+        slice
+    }
+
+    pub fn read_u16(&mut self) -> usize {
+        let byte1 = self.read_n_bits(8);
+        let byte2 = self.read_n_bits(8);
+
+        println!("{:?} {:?}", byte1, byte2);
+        byte2 << 8 | byte1
+    }
 }
