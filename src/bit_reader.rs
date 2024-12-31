@@ -13,6 +13,10 @@ impl BitReader<'_> {
         }
     }
 
+    pub fn pos(&self) -> usize {
+        self.bit_position
+    }
+
     pub fn read_n_bits(&mut self, mut n: usize) -> usize {
         let mut result: usize = 0;
         let mut shift = 0;
@@ -40,7 +44,9 @@ impl BitReader<'_> {
 
     pub fn read_until_byte_boundry(&mut self) {
         let bit_index = self.bit_position % 8;
-        self.read_n_bits(8 - bit_index);
+        if bit_index != 0 {
+            self.read_n_bits(8 - bit_index);
+        }
     }
 
     pub fn read_bytes(&mut self, n: usize) -> &[u8] {
@@ -55,7 +61,6 @@ impl BitReader<'_> {
         let byte1 = self.read_n_bits(8);
         let byte2 = self.read_n_bits(8);
 
-        println!("{:?} {:?}", byte1, byte2);
         byte2 << 8 | byte1
     }
 }
