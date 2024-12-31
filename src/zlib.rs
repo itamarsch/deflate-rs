@@ -26,9 +26,9 @@ fn read_header<'a, 'b>(header: &'a [u8], dict: Option<&'b str>) -> IResult<&'a [
 
     let check = ((cmf as u16) << 8) | flg as u16;
 
-    let _fdict = flg & 0b00100000 >> 5;
+    let fdict = (flg >> 5) & 0x01;
 
-    let header = if _fdict == 1 {
+    let header = if fdict == 1 {
         let (header, _dict_id) = take(4usize)(header)?;
         if let Some(dict) = dict {
             check_adler(_dict_id.try_into().unwrap(), dict.as_bytes());
@@ -44,7 +44,7 @@ fn read_header<'a, 'b>(header: &'a [u8], dict: Option<&'b str>) -> IResult<&'a [
         header
     };
 
-    let _compression_level = flg & 0b11000000 >> 6;
+    let _compression_level = (flg >> 6) & 0x11;
 
     assert_eq!(check % 31, 0, "Zlib header validity check");
     Ok((header, ()))

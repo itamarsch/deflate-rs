@@ -5,7 +5,7 @@ pub struct BitReader<'a> {
     bit_position: usize,
 }
 
-impl BitReader<'_> {
+impl<'b> BitReader<'b> {
     pub fn new<'a>(data: &'a [u8]) -> BitReader<'a> {
         BitReader {
             data,
@@ -49,7 +49,7 @@ impl BitReader<'_> {
         }
     }
 
-    pub fn read_bytes(&mut self, n: usize) -> &[u8] {
+    pub fn read_bytes<'a>(&'a mut self, n: usize) -> &'b [u8] {
         assert!(self.bit_position % 8 == 0);
         let byte_index = self.bit_position / 8;
         let slice = &self.data[byte_index..byte_index + n];

@@ -1,7 +1,6 @@
-use std::ops::Not;
-
 use dynamic_huffman::read_dynamic_huffman;
 use fixed_huffman::fixed_huffman_tree;
+use uncompressed::read_uncompressed;
 
 use crate::{bit_reader::BitReader, huffman_tree::HuffmanTree};
 
@@ -9,17 +8,14 @@ use super::length_distance::decode_length_distance;
 
 mod dynamic_huffman;
 mod fixed_huffman;
+mod uncompressed;
 
 pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
     let bfinal = reader.read_bool();
     let block_type = reader.read_n_bits(2);
     match block_type {
         0b00 => {
-            reader.read_until_byte_boundry();
-            let len = reader.read_u16();
-            let nlen = reader.read_u16();
-            assert_eq!(len as u16, (nlen as u16).not());
-            let data = reader.read_bytes(len);
+            let data = read_uncompressed(reader);
             buf.extend_from_slice(data);
         }
         0b01 => {
@@ -30,12 +26,8 @@ pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
             let (literal, distance) = read_dynamic_huffman(reader);
             read_compressed_block(reader, buf, literal, distance);
         }
-        0b11 => {
-            unreachable!("Reserved")
-        }
-        _ => {
-            unreachable!("3 bits")
-        }
+        0b11 => unreachable!("Reserved"),
+        _ => unreachable!("3 bits"),
     }
 
     bfinal

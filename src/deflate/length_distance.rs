@@ -50,19 +50,17 @@ fn decode_distance(distance_byte: usize, extra: usize) -> usize {
 }
 
 fn length_extra_bits(length_byte: u16) -> usize {
-    match length_byte {
-        257..=264 => 0,
-        265..=268 => 1,
-        269..=272 => 2,
-        273..=276 => 3,
-        277..=280 => 4,
-        281..=284 => 5,
-        285 => 0,
-        _ => panic!("Invalid length value"),
+    assert!(257 <= length_byte && length_byte <= 285);
+    let length_byte = length_byte - 257;
+    if length_byte == 28 || length_byte < 4 {
+        0
+    } else {
+        ((length_byte - 4) / 4) as usize
     }
 }
 
 fn distance_extra_bits(distance_byte: u16) -> usize {
+    assert!(distance_byte <= 29);
     if distance_byte < 2 {
         0
     } else {
