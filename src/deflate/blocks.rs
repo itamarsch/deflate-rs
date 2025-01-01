@@ -19,6 +19,7 @@ pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
     match block_type {
         0b00 => {
             let data = read_uncompressed(reader);
+            println!("{:?}", std::str::from_utf8(data));
             buf.extend_from_slice(data);
         }
         0b01 => {
@@ -26,7 +27,7 @@ pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
             read_compressed_block(reader, buf, trees);
         }
         0b10 => {
-            let trees = read_dynamic_huffman(reader);
+            let trees: LiteralDistanceTrees = read_dynamic_huffman(reader);
             read_compressed_block(reader, buf, trees);
         }
         0b11 => unreachable!("Reserved"),

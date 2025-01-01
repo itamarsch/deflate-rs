@@ -17,6 +17,15 @@ impl<'b> BitReader<'b> {
         self.bit_position
     }
 
+    pub fn bytes_read(&self) -> usize {
+        let byte_pos = self.bit_position / 8;
+        if self.bit_position % 8 != 0 {
+            byte_pos + 1
+        } else {
+            byte_pos
+        }
+    }
+
     pub fn read_n_bits(&mut self, mut n: usize) -> usize {
         let mut result: usize = 0;
         let mut shift = 0;
