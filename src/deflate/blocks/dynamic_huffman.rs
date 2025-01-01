@@ -1,10 +1,13 @@
-use crate::{bit_reader::BitReader, huffman_tree::HuffmanTree};
+use crate::{
+    bit_reader::BitReader,
+    deflate::huffman_tree::{HuffmanTree, LiteralDistanceTrees},
+};
 
 const CODE_LENGTH_ORDER: [u8; 19] = [
     16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
 ];
 
-pub fn read_dynamic_huffman(reader: &mut BitReader) -> (HuffmanTree, HuffmanTree) {
+pub fn read_dynamic_huffman(reader: &mut BitReader) -> LiteralDistanceTrees {
     let hlit = reader.read_n_bits(5) + 257;
     let hdist = reader.read_n_bits(5) + 1;
     let hclen = reader.read_n_bits(4) + 4;
@@ -15,9 +18,12 @@ pub fn read_dynamic_huffman(reader: &mut BitReader) -> (HuffmanTree, HuffmanTree
     }
 
     let code_length_tree = HuffmanTree::new(&code_length_code_lengths);
-    let literal_table = build_dynamic_huffman::<288>(reader, hlit, &code_length_tree);
-    let dist_tables = build_dynamic_huffman::<32>(reader, hdist, &code_length_tree);
-    (literal_table, dist_tables)
+    let literal_length = build_dynamic_huffman::<288>(reader, hlit, &code_length_tree);
+    let distance = build_dynamic_huffman::<32>(reader, hdist, &code_length_tree);
+    LiteralDistanceTrees {
+        literal_length,
+        distance,
+    }
 }
 
 fn build_dynamic_huffman<const T: usize>(

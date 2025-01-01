@@ -10,7 +10,6 @@ pub fn read_zlib<'a, 'b>(rest: &'a [u8], dict: Option<&'b str>) -> IResult<&'a [
     let buf = read_deflate(rest);
 
     check_adler(footer.try_into().unwrap(), &buf);
-    // assert!(rest.is_empty());
 
     Ok((rest, buf))
 }

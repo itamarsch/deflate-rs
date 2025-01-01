@@ -1,12 +1,17 @@
 use crate::bit_reader::BitReader;
 
-pub struct HuffmanTree(pub Vec<HuffmanSymbol>);
+pub struct HuffmanTree(Vec<HuffmanSymbol>);
 
 #[derive(Clone, Copy, Debug)]
 pub struct HuffmanSymbol {
-    pub symbol: u16,
-    pub value: u16,
-    pub length: u16,
+    symbol: u16,
+    value: u16,
+    length: u16,
+}
+
+pub struct LiteralDistanceTrees {
+    pub literal_length: HuffmanTree,
+    pub distance: HuffmanTree,
 }
 
 impl HuffmanTree {

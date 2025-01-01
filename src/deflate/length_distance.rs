@@ -1,10 +1,17 @@
-use crate::{bit_reader::BitReader, huffman_tree::HuffmanTree};
+use crate::bit_reader::BitReader;
+
+use super::huffman_tree::HuffmanTree;
+
+pub struct LengthDistance {
+    pub length: usize,
+    pub distance: usize,
+}
 
 pub fn decode_length_distance(
     reader: &mut BitReader,
     distance_tree: &HuffmanTree,
     length_byte: u16,
-) -> (usize, usize) {
+) -> LengthDistance {
     let length_extra_bits = length_extra_bits(length_byte);
     let length_extra = reader.read_n_bits(length_extra_bits);
     let length = decode_length(length_byte as usize, length_extra);
@@ -13,7 +20,7 @@ pub fn decode_length_distance(
     let distance_extra_bits = distance_extra_bits(distance_byte);
     let distance_extra = reader.read_n_bits(distance_extra_bits);
     let distance = decode_distance(distance_byte as usize, distance_extra);
-    (length, distance)
+    LengthDistance { length, distance }
 }
 
 fn decode_length(length_byte: usize, extra: usize) -> usize {

@@ -1,6 +1,6 @@
-use crate::huffman_tree::HuffmanTree;
+use crate::deflate::huffman_tree::{HuffmanTree, LiteralDistanceTrees};
 
-pub fn fixed_huffman_tree() -> (HuffmanTree, HuffmanTree) {
+pub fn fixed_huffman_tree() -> LiteralDistanceTrees {
     let mut literals = [0; 288];
     let mut distances = [0; 32];
 
@@ -25,5 +25,8 @@ pub fn fixed_huffman_tree() -> (HuffmanTree, HuffmanTree) {
     }
     let literal_tree = HuffmanTree::new(&literals);
     let distance_tree = HuffmanTree::new(&distances);
-    (literal_tree, distance_tree)
+    LiteralDistanceTrees {
+        literal_length: literal_tree,
+        distance: distance_tree,
+    }
 }

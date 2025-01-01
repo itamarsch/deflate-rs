@@ -3,6 +3,7 @@ use blocks::read_block;
 use crate::bit_reader::BitReader;
 
 pub mod blocks;
+pub mod huffman_tree;
 pub mod length_distance;
 
 pub fn read_deflate(compressed: &[u8]) -> Vec<u8> {
