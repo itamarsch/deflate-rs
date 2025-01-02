@@ -15,9 +15,9 @@ pub struct LiteralDistanceTrees {
 }
 
 impl HuffmanTree {
-    pub fn new(code_lengths: &[u8]) -> Self {
+    pub fn new<const T: usize>(code_lengths: &[u8]) -> Self {
         let max_length = code_lengths.iter().max().unwrap();
-        let mut bl_count = vec![0; *max_length as usize + 1];
+        let mut bl_count = [0; T];
         for &code_length in code_lengths {
             if code_length == 0 {
                 continue;
@@ -25,7 +25,7 @@ impl HuffmanTree {
             bl_count[code_length as usize] += 1;
         }
 
-        let mut huffman_codes = vec![0; *max_length as usize + 1];
+        let mut huffman_codes = [0; T];
         let mut code: usize = 0;
         for bits in 1..=*max_length {
             code = (code + bl_count[bits as usize - 1]) << 1;

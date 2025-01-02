@@ -23,8 +23,8 @@ pub fn fixed_huffman_tree() -> LiteralDistanceTrees {
     for i in 0..distances.len() {
         distances[i] = 5;
     }
-    let literal_tree = HuffmanTree::new(&literals);
-    let distance_tree = HuffmanTree::new(&distances);
+    let literal_tree = HuffmanTree::new::<288>(&literals);
+    let distance_tree = HuffmanTree::new::<32>(&distances);
     LiteralDistanceTrees {
         literal_length: literal_tree,
         distance: distance_tree,

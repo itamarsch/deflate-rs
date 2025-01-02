@@ -1,4 +1,8 @@
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::{
+    ffi::OsStr,
+    path::Path,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use nom::{
     bytes::complete::{tag, take_until},
@@ -9,7 +13,7 @@ use nom::{
 use crate::deflate::read_deflate;
 
 pub struct Gzip<'a> {
-    pub filename: &'a str,
+    pub filename: &'a Path,
     pub data: Vec<u8>,
     pub mtime: SystemTime,
 }
@@ -53,11 +57,12 @@ pub fn read_gzip(input: &[u8]) -> IResult<&[u8], Gzip> {
     assert_eq!(calculated_crc, crc32);
     assert!(isize as usize == decompressed.len() % (2 << 32));
 
+    let filename = OsStr::new(std::str::from_utf8(name).unwrap());
     Ok((
         input,
         Gzip {
             data: decompressed,
-            filename: std::str::from_utf8(name).unwrap(),
+            filename: Path::new(filename),
             mtime,
         },
     ))

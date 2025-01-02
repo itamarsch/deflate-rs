@@ -17,7 +17,7 @@ pub fn read_dynamic_huffman(reader: &mut BitReader) -> LiteralDistanceTrees {
         code_length_code_lengths[CODE_LENGTH_ORDER[i as usize] as usize] = len;
     }
 
-    let code_length_tree = HuffmanTree::new(&code_length_code_lengths);
+    let code_length_tree = HuffmanTree::new::<19>(&code_length_code_lengths);
     let literal_length = build_dynamic_huffman::<288>(reader, hlit, &code_length_tree);
     let distance = build_dynamic_huffman::<32>(reader, hdist, &code_length_tree);
     LiteralDistanceTrees {
@@ -58,5 +58,5 @@ fn build_dynamic_huffman<const T: usize>(
             index += 1;
         }
     }
-    HuffmanTree::new(&symbols[..])
+    HuffmanTree::new::<T>(&symbols[..])
 }
