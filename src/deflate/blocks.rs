@@ -19,7 +19,6 @@ pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
     match block_type {
         0b00 => {
             let data = read_uncompressed(reader);
-            println!("{:?}", std::str::from_utf8(data));
             buf.extend_from_slice(data);
         }
         0b01 => {
