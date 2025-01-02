@@ -1,8 +1,7 @@
 use std::{
     fs::File,
-    io::{self, Read, Write},
+    io::{self, Read},
     path::{Path, PathBuf},
-    time::SystemTime,
 };
 
 use clap::{command, Parser};
@@ -23,25 +22,20 @@ fn read_file_bytes(filename: &Path) -> io::Result<Vec<u8>> {
     Ok(bytes)
 }
 
-fn write_output(filename: &Path, mtime: SystemTime, decompressed: &[u8]) -> io::Result<()> {
-    let mut file = File::create(filename)?;
-    file.set_modified(mtime)?;
-    file.write_all(decompressed)
-}
-
 fn main() -> io::Result<()> {
     let args = DecompressArgs::parse();
 
     let file = read_file_bytes(&args.input)?;
 
-    if args.input.extension().is_some_and(|ext| ext == "gz") {
+    if args.input.extension().is_some_and(|ext| ext == "gz")
+        && args
+            .input
+            .file_stem()
+            .is_some_and(|stem| stem.to_str().is_some_and(|stem| stem.ends_with(".tar")))
+    {
         let (_, gzip) = read_gzip(&file).unwrap();
 
-        if gzip.filename.extension().is_some_and(|e| e == "tar") {
-            inflate_tar(&gzip.data).unwrap();
-        } else {
-            write_output(gzip.filename, gzip.mtime, &gzip.data).unwrap();
-        }
+        inflate_tar(&gzip.data).unwrap();
     }
 
     // let (_, decompressed) = read_zlib(&file, args.dict.as_ref().map(|e| e.as_str())).unwrap();

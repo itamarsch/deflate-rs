@@ -1,1 +1,5 @@
 /target
+/gcc-14.2.0
+perf.svg
+perf.data
+perf.data.old

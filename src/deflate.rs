@@ -1,4 +1,5 @@
 use blocks::read_block;
+use indicatif::ProgressBar;
 
 use crate::bit_reader::BitReader;
 
@@ -10,12 +11,18 @@ pub fn read_deflate(compressed: &[u8]) -> (&[u8], Vec<u8>) {
     let mut reader = BitReader::new(compressed);
     let mut buf = Vec::new();
 
+    let bar = ProgressBar::new((compressed.len()) as u64);
     loop {
+        let start_pos = reader.pos();
+
         let final_block = read_block(&mut reader, &mut buf);
+        let end_pos = reader.pos();
+        bar.inc((end_pos - start_pos) as u64 / 8);
         if final_block {
             break;
         }
     }
+    bar.finish();
     let compressed_length = reader.bytes_read();
     (&compressed[compressed_length..], buf)
 }
