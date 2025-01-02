@@ -1,11 +1,13 @@
+use std::{collections::HashMap, hash::Hash};
+
 use crate::bit_reader::BitReader;
+use fxhash::FxBuildHasher;
 
-pub struct HuffmanTree(Vec<HuffmanSymbol>);
+pub struct HuffmanTree(HashMap<HuffmanSymbol, u16, FxBuildHasher>);
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct HuffmanSymbol {
     symbol: u16,
-    value: u16,
     length: u16,
 }
 
@@ -32,15 +34,17 @@ impl HuffmanTree {
             huffman_codes[bits as usize] = code;
         }
 
-        let mut huffman_tree = Vec::new();
+        let mut huffman_tree = HashMap::default();
 
-        for (symbol, &length) in code_lengths.iter().enumerate() {
+        for (value, &length) in code_lengths.iter().enumerate() {
             if length > 0 {
-                huffman_tree.push(HuffmanSymbol {
-                    symbol: huffman_codes[length as usize] as u16,
-                    value: symbol as u16,
-                    length: length as u16,
-                });
+                huffman_tree.insert(
+                    HuffmanSymbol {
+                        symbol: huffman_codes[length as usize] as u16,
+                        length: length as u16,
+                    },
+                    value as u16,
+                );
                 huffman_codes[length as usize] += 1;
             }
         }
@@ -58,12 +62,11 @@ impl HuffmanTree {
             code |= reader.read_n_bits(1) as u16;
 
             // Search for a matching symbol
-            if let Some(symbol) = self
-                .0
-                .iter()
-                .find(|node| node.length == bit_count && node.symbol == code)
-            {
-                return symbol.value;
+            if let Some(value) = self.0.get(&HuffmanSymbol {
+                symbol: code,
+                length: bit_count,
+            }) {
+                return *value;
             }
         }
 
