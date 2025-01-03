@@ -2,9 +2,11 @@ use std::{
     fs::{self, File},
     io::{self, Write},
     path::{Path, PathBuf},
+    time::Duration,
 };
 
 use header::{FileType, TarHeader};
+use indicatif::{ProgressBar, ProgressStyle};
 use nom::{bytes::streaming::take, IResult, InputIter};
 
 mod header;
@@ -73,10 +75,17 @@ pub fn write_file(
 
 pub fn inflate_tar(mut input: &[u8]) -> IResult<&[u8], ()> {
     let mut next_filename = None;
+    let bar = ProgressBar::new_spinner();
+    bar.set_style(
+        ProgressStyle::default_spinner()
+            .template("[{elapsed_precise}] {msg}")
+            .expect("Failed to set progress bar template"),
+    );
+    bar.enable_steady_tick(Duration::from_millis(100));
 
     while !input.is_empty() {
         let tar_header;
-        ((input, tar_header)) = TarHeader::parse(input)?;
+        (input, tar_header) = TarHeader::parse(input)?;
 
         let file_content;
         (input, file_content) = take(tar_header.file_size)(input)?;
@@ -86,14 +95,13 @@ pub fn inflate_tar(mut input: &[u8]) -> IResult<&[u8], ()> {
                 Some(std::str::from_utf8(&file_content[..file_content.len() - 1]).unwrap());
         } else {
             write_file(file_content, &tar_header, &mut next_filename).unwrap();
-        }
+            let filename = match &next_filename {
+                Some(name) => name.to_string(),
+                None => tar_header.filename.display().to_string(),
+            };
 
-        println!(
-            "{}/{} {:?}",
-            tar_header.filename_prefix,
-            tar_header.filename.display(),
-            tar_header.file_type
-        );
+            bar.set_message(format!("Processing: {}", filename));
+        }
 
         (input, _) = take((512 - file_content.len() % 512) % 512)(input)?;
 
@@ -102,5 +110,6 @@ pub fn inflate_tar(mut input: &[u8]) -> IResult<&[u8], ()> {
             break;
         }
     }
+    bar.finish();
     Ok((input, ()))
 }

@@ -6,7 +6,7 @@ use std::{
 
 use clap::{command, Parser};
 use deflate::gzip::read_gzip;
-/// CLI Parser Example
+
 #[derive(Parser, Debug)]
 #[command(about = "Decompress a zlib file")]
 struct DecompressArgs {
@@ -37,8 +37,6 @@ fn main() -> io::Result<()> {
 
         // inflate_tar(&gzip.data).unwrap();
     }
-
-    // let (_, decompressed) = read_zlib(&file, args.dict.as_ref().map(|e| e.as_str())).unwrap();
 
     Ok(())
 }

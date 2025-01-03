@@ -1,5 +1,5 @@
 use blocks::read_block;
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::bit_reader::BitReader;
 
@@ -13,6 +13,12 @@ pub fn read_deflate(compressed: &[u8], original_file_size: Option<usize>) -> (&[
     let mut buf = Vec::with_capacity(original_file_size.unwrap_or(0));
 
     let bar = ProgressBar::new((compressed.len()) as u64);
+    let style = ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos}/{len}")
+        .unwrap()
+        .progress_chars("#>-");
+    bar.set_style(style);
+
     loop {
         let start_pos = reader.pos();
 
