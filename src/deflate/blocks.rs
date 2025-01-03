@@ -1,5 +1,4 @@
 use dynamic_huffman::read_dynamic_huffman;
-use fixed_huffman::fixed_huffman_tree;
 use uncompressed::read_uncompressed;
 
 use crate::bit_reader::BitReader;
@@ -22,7 +21,7 @@ pub fn read_block(reader: &mut BitReader, buf: &mut Vec<u8>) -> bool {
             buf.extend_from_slice(data);
         }
         0b01 => {
-            let trees = fixed_huffman_tree();
+            let trees = LiteralDistanceTrees::fixed_huffman();
             read_compressed_block(reader, buf, trees);
         }
         0b10 => {

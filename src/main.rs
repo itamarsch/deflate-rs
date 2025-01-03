@@ -35,7 +35,7 @@ fn main() -> io::Result<()> {
     {
         let (_, gzip) = read_gzip(&file).unwrap();
 
-        inflate_tar(&gzip.data).unwrap();
+        // inflate_tar(&gzip.data).unwrap();
     }
 
     // let (_, decompressed) = read_zlib(&file, args.dict.as_ref().map(|e| e.as_str())).unwrap();

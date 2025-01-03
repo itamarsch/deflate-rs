@@ -3,11 +3,11 @@ use std::{collections::HashMap, hash::Hash};
 use crate::bit_reader::BitReader;
 use fxhash::FxBuildHasher;
 
-pub struct HuffmanTree(HashMap<HuffmanSymbol, u16, FxBuildHasher>);
+pub struct HuffmanTree(HashMap<HuffmanCode, u16, FxBuildHasher>);
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub struct HuffmanSymbol {
-    symbol: u16,
+pub struct HuffmanCode {
+    code: u16,
     length: u16,
 }
 
@@ -19,18 +19,18 @@ pub struct LiteralDistanceTrees {
 impl HuffmanTree {
     pub fn new<const T: usize>(code_lengths: &[u8]) -> Self {
         let max_length = code_lengths.iter().max().unwrap();
-        let mut bl_count = [0; T];
+        let mut codes_per_length = [0; T];
         for &code_length in code_lengths {
             if code_length == 0 {
                 continue;
             }
-            bl_count[code_length as usize] += 1;
+            codes_per_length[code_length as usize] += 1;
         }
 
         let mut huffman_codes = [0; T];
         let mut code: usize = 0;
         for bits in 1..=*max_length {
-            code = (code + bl_count[bits as usize - 1]) << 1;
+            code = (code + codes_per_length[bits as usize - 1]) << 1;
             huffman_codes[bits as usize] = code;
         }
 
@@ -39,8 +39,8 @@ impl HuffmanTree {
         for (value, &length) in code_lengths.iter().enumerate() {
             if length > 0 {
                 huffman_tree.insert(
-                    HuffmanSymbol {
-                        symbol: huffman_codes[length as usize] as u16,
+                    HuffmanCode {
+                        code: huffman_codes[length as usize] as u16,
                         length: length as u16,
                     },
                     value as u16,
@@ -62,8 +62,8 @@ impl HuffmanTree {
             code |= reader.read_n_bits(1) as u16;
 
             // Search for a matching symbol
-            if let Some(value) = self.0.get(&HuffmanSymbol {
-                symbol: code,
+            if let Some(value) = self.0.get(&HuffmanCode {
+                code,
                 length: bit_count,
             }) {
                 return *value;
