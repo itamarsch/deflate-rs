@@ -6,7 +6,7 @@ use crate::deflate::read_deflate;
 pub fn read_zlib<'a, 'b>(rest: &'a [u8], dict: Option<&'b str>) -> IResult<&'a [u8], Vec<u8>> {
     let (rest, ()) = read_header(rest, dict)?;
 
-    let (footer, buf) = read_deflate(rest);
+    let (footer, buf) = read_deflate(rest, None);
     assert!(footer.len() == 4);
 
     check_adler(footer.try_into().unwrap(), &buf);

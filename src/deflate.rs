@@ -4,12 +4,13 @@ use indicatif::ProgressBar;
 use crate::bit_reader::BitReader;
 
 pub mod blocks;
+mod huffman_dict;
 pub mod huffman_tree;
 pub mod length_distance;
 
-pub fn read_deflate(compressed: &[u8]) -> (&[u8], Vec<u8>) {
+pub fn read_deflate(compressed: &[u8], original_file_size: Option<usize>) -> (&[u8], Vec<u8>) {
     let mut reader = BitReader::new(compressed);
-    let mut buf = Vec::new();
+    let mut buf = Vec::with_capacity(original_file_size.unwrap_or(0));
 
     let bar = ProgressBar::new((compressed.len()) as u64);
     loop {

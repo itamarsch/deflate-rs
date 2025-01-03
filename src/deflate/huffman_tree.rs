@@ -1,15 +1,8 @@
-use std::{collections::HashMap, hash::Hash};
-
 use crate::bit_reader::BitReader;
-use fxhash::FxBuildHasher;
 
-pub struct HuffmanTree(HashMap<HuffmanCode, u16, FxBuildHasher>);
+use super::huffman_dict::HuffmanDict;
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub struct HuffmanCode {
-    code: u16,
-    length: u16,
-}
+pub struct HuffmanTree(HuffmanDict);
 
 pub struct LiteralDistanceTrees {
     pub literal_length: HuffmanTree,
@@ -34,15 +27,13 @@ impl HuffmanTree {
             huffman_codes[bits as usize] = code;
         }
 
-        let mut huffman_tree = HashMap::default();
+        let mut huffman_tree = HuffmanDict::new();
 
         for (value, &length) in code_lengths.iter().enumerate() {
             if length > 0 {
                 huffman_tree.insert(
-                    HuffmanCode {
-                        code: huffman_codes[length as usize] as u16,
-                        length: length as u16,
-                    },
+                    huffman_codes[length as usize] as u16,
+                    length as u16,
                     value as u16,
                 );
                 huffman_codes[length as usize] += 1;
@@ -62,11 +53,8 @@ impl HuffmanTree {
             code |= reader.read_n_bits(1) as u16;
 
             // Search for a matching symbol
-            if let Some(value) = self.0.get(&HuffmanCode {
-                code,
-                length: bit_count,
-            }) {
-                return *value;
+            if let Some(value) = self.0.get(code, bit_count) {
+                return value;
             }
         }
 

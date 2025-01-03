@@ -5,7 +5,7 @@ use std::{
 };
 
 use clap::{command, Parser};
-use deflate::{gzip::read_gzip, tar::inflate_tar};
+use deflate::gzip::read_gzip;
 /// CLI Parser Example
 #[derive(Parser, Debug)]
 #[command(about = "Decompress a zlib file")]
@@ -33,7 +33,7 @@ fn main() -> io::Result<()> {
             .file_stem()
             .is_some_and(|stem| stem.to_str().is_some_and(|stem| stem.ends_with(".tar")))
     {
-        let (_, gzip) = read_gzip(&file).unwrap();
+        let (_, _) = read_gzip(&file).unwrap();
 
         // inflate_tar(&gzip.data).unwrap();
     }

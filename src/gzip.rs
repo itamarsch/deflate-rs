@@ -5,7 +5,7 @@ use std::{
 };
 
 use nom::{
-    bytes::complete::{tag, take_until},
+    bytes::complete::{tag, take, take_until},
     number::complete::{le_u32, u8},
     IResult,
 };
@@ -47,13 +47,17 @@ pub fn read_gzip(input: &[u8]) -> IResult<&[u8], Gzip> {
     let (input, ()) = if fcomment { todo!() } else { (input, ()) };
     let (input, ()) = if fhcrc { todo!() } else { (input, ()) };
 
-    let (input, decompressed) = read_deflate(input);
-    assert!(input.len() == 8);
-    let (input, crc32) = le_u32(input)?;
+    let (footer, input) = take(input.len() - 8usize)(input)?;
+
+    let (footer, crc32) = le_u32(footer)?;
+
+    let (_, isize) = le_u32(footer)?;
+
+    let (input, decompressed) = read_deflate(input, Some(isize as usize));
+
+    assert!(input.len() == 0);
 
     let calculated_crc = crc32fast::hash(&decompressed);
-    let (input, isize) = le_u32(input)?;
-
     assert_eq!(calculated_crc, crc32);
     assert!(isize as usize == decompressed.len() % (2 << 32));
 
